@@ -14,7 +14,7 @@ tags:
 
 ### 启动开启mysql(win平台)
 
-- 启动mysql
+- 启动mysql 
 ```
 cd C:\mysql-5.0.45-win32\bin
 
