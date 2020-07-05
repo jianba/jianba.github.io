@@ -1,0 +1,117 @@
+---
+layout:     post
+title:      "基于.net core3.1的JWT授权01"
+subtitle:   "基于.net core3.1的JWT授权01"
+date:       2020-07-05 23:00:00
+author:     "jianba"
+header-img: "img/post-bg-android.jpg"
+tags:
+    - C#
+    - jwt
+---
+
+# 基于.net core3.1的JWT授权01
+
+> 目标：完成Token的分发及简单授权
+
+### 安装nuget包
+
+- nuget管理器中安装 Microsoft.AspNetCore.Authentication.JwtBearer 
+
+### 依赖注入JWTBearer认证服务
+
+- StartUp.cs中添加以下代码
+
+```
+SecurityKey securityKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes("laozhang"));
+
+            services.AddAuthentication("Bearer")
+                .AddJwtBearer(o => {
+                    o.TokenValidationParameters = new TokenValidationParameters()
+                    {
+
+                        //3+2
+
+                        // 配置数字签名
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = securityKey,
+
+                        // 配置发行人参数
+                        ValidateIssuer = true,
+                        ValidIssuer = "issure",
+
+                        // 配置使用人参数
+                        ValidateAudience = true,
+                        ValidAudience = "audience",
+
+                        // 验证过期时间 // 验证生命周期
+                        RequireExpirationTime = true,
+                        ValidateLifetime = true
+                    };
+                });
+```
+
+### 添加生成令牌的控制器（对新手不会就百度，我记得我第一次写.net core着实不会QAQ）
+
+- 代码如下
+
+```
+    [Route("[controller]")]
+    [ApiController]
+    public class LoginController : ControllerBase
+    {
+        
+        public string GetToken()
+        {
+            //3+2
+            SecurityToken securityToken = new JwtSecurityToken(
+                signingCredentials: new SigningCredentials(
+                    new SymmetricSecurityKey(Encoding.ASCII.GetBytes("laozhanglaozhanglaozhanglaozhanglaozhang")),
+                    SecurityAlgorithms.HmacSha256),
+                issuer: "issure",
+                audience: "audience",
+
+                expires: DateAndTime.Now.AddHours(1),
+
+                //授权策略
+                claims: new Claim[] { }
+                );
+            return new JwtSecurityTokenHandler().WriteToken(securityToken);
+        }
+        
+    }
+```
+
+### 开启认证中间件
+
+- 在startup.cs的 app.UseRouting(); 后添加 app.UseAuthentication(); 和 app.UseAuthorization();
+
+### API添加权限过滤器
+
+- controller上添加[Authorize]
+
+### 测试
+
+- 访问api （http://localhost:5000/Login） 获取token
+
+- 使用postman get请求 http://localhost:5000/api/weatherforecast 在headers列中添加 Authorization 值为 Bearer+' '+token 
+
+```
+eg：Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE1OTM5NDUyMDIsImlzcyI6Imlzc3VyZSIsImF1ZCI6ImF1ZGllbmNlIn0.-Rwpq13Qa4vNCKzwmiIXweM5jk9YE0trGNW3iA5-exg 
+```
+
+### 容易忽略的错误
+
+- 密钥长度
+
+- 认证开启 authentication
+
+### 源码
+
+- https://github.com/jianba/.net-vue/commit/1c8ec9336147d1cc34da0c9ed17ac3672424a3f0
+
+### Q&A
+
+- 角色授权，策略授权？
+
+- 此时的swagger失效要怎么解决
