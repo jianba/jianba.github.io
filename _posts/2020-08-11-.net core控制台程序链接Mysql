@@ -1,0 +1,89 @@
+---
+layout:     post
+title:      ".net core控制台程序链接Mysql"
+subtitle:   ".net core控制台程序链接Mysql"
+date:       2020-08-11 23:00:00
+author:     "jianba"
+header-img: "img/post-bg-android.jpg"
+tags:
+    - C#
+    - .net core
+    - mysql
+---
+
+## .net core控制台程序链接Mysql
+
+> linux服务器需要将mysql日志文件插入elastaicsearch（ES） 存储，需要一个程序在logstash抽取mysql中日志文件写入ES时，删除mysql中已插入日志文件。
+> logstash会定期向txt文件写入插入 es数据的id信息。
+> 内容如下 ` --- 1000 `
+
+### 解决方案 
+  
+  - 使用.net core 控制台程序轮询txt文件，动态删除mysql中数据。
+
+### 流程
+
+  1. 新建 .net core控制台程序 版本2.2
+
+  2. 安装依赖包 
+  
+  ```
+  Microsoft.EntityFrameworkCore (3.1.6)
+  Microsoft.EntityFrameworkCore.Design (3.1.6)
+  Microsoft.EntityFrameworkCore.Tools (3.1.6)
+  Microsoft.Extensions.ConfigurationJson (3.1.6)
+  Pomeo.EntityFrameworkCore.MySql (3.1.2)
+  ```
+  
+  3. 添加appsettings.json文件
+  
+  ```
+  {
+    "ConnectionStrings": {
+      "Default": "Server=localhost;Database=fastconnectdb;Port=3306;charset=utf8;uid=root;pwd=123456;"
+    }
+  }
+  ```
+  
+  4. 新建Models文件夹添加 Company.cs
+  
+  ```
+    using System;
+    using System.Collections.Generic;
+    using System.Text;
+
+    namespace Tk.Soc.LAS.Models
+    {
+        /// <summary>
+        /// 公司信息
+        /// </summary>
+        public class Company
+        {
+            /// <summary>
+            /// Id
+            /// </summary>
+            public int Id { get; set; }
+
+            /// <summary>
+            /// 公司名称
+            /// </summary>
+            public string Name { get; set; }
+
+            /// <summary>
+            /// 公司地址
+            /// </summary>
+            public string Address { get; set; }
+        }
+    }
+
+  ```
+  
+  5. 使用add-migration initial 和 update-database 命令
+  
+  6. 源码地址: https://github.com/jianba/ExampleCode/tree/master/Tk.Soc.LAS
+ 
+ ## 坑
+   
+   - appsettings.json文件要更改文件属性，不然找不到改文件正确位置。
+  
+  
